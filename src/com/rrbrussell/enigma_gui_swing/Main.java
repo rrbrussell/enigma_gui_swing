@@ -32,7 +32,11 @@ public class Main extends javax.swing.JFrame {
 	private static final long serialVersionUID = -129118185558719896L;
 	
 	private JPanel simpleEnigma;
-	private JPanel complexEnigma;
+	/*
+	 * This is getting put aside temporarily because I do not have the time
+	 * to deal with it right now.
+	 */
+	//private JPanel complexEnigma;
 	
 	private static File privateDirectory;
 	private static File propertiesFile;
