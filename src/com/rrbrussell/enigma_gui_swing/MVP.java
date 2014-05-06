@@ -8,6 +8,8 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.HeadlessException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -16,20 +18,126 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
-import com.rrbrussell.enigma_demonstration.Characters;
-import com.rrbrussell.enigma_demonstration.M3Machine;
+import com.rrbrussell.enigma_demonstration.*;
+import com.rrbrussell.enigma_demonstration.Reflector.Reflectors;
+import com.rrbrussell.enigma_demonstration.Rotor.Rotors;
 
 /**
  * @author Robert R. Russell
  *
  */
 public class MVP extends JFrame {
+
+	/**
+	 * @author Robert R. Russell
+	 * @author robert@rrbussell.com
+	 */
+	private class Controller implements ActionListener {
+		
+		private JFrame parentWindow;
+
+		/**
+		 * 
+		 */
+		public Controller(JFrame parent) {
+			parentWindow = parent;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+		 */
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if(e.getActionCommand().equals("Encode")) {
+				encrypt(e);
+			}
+
+		}
+		
+		private void encrypt(ActionEvent e) {
+			boolean validPairings = true;
+			boolean validStartingPositions = true;
+			boolean validMessageKey = true;
+			
+			M3Machine enigma = new M3Machine();
+			
+			//construct RotorTable
+			Rotors[] rotorTable = new Rotors[3];
+			Iterator<JComboBox<String>> iterator = rotorChoices.iterator();
+			for(int i = 0; i < rotorTable.length; i++) {
+				rotorTable[i] = Rotors.valueOf((String)
+						iterator.next().getSelectedItem());
+			}
+			
+			//construct ringOffsetTable
+			Characters[] ringOffsetTable = new Characters[3];
+			iterator = rotorOffsets.iterator();
+			for(int i = 0; i < ringOffsetTable.length; i++) {
+				ringOffsetTable[i] = Characters.valueOf((String)
+						iterator.next().getSelectedItem());
+			}
+			
+			enigma.loadRotors(Reflectors.WideB, rotorTable, ringOffsetTable);
+			
+			//Validate the pairings string
+			if(SteckerBoard.validatePairings(plugBoardField.getText())) {
+				enigma.SetSteckerBoard(plugBoardField.getText());
+			} else {
+				JOptionPane.showMessageDialog(parentWindow,
+						"The plugboard settings are not valid");
+				validPairings = false;
+			}
+			
+			//Validate the starting positions
+			Characters[] startingPositions = null;
+			try {
+				startingPositions = Utility.stringToCharactersArray(
+						startPositionField.getText());
+			}
+			catch(IllegalArgumentException exception) {
+				JOptionPane.showMessageDialog(parentWindow,
+						"The starting positions are wrong.");
+				validStartingPositions =false;
+			}
+			if(validStartingPositions) {
+				if(startingPositions.length != 3) {
+					validStartingPositions = false;
+				}
+			}
+			
+			//Validate message key
+			Characters[] messageKey = null;
+			try {
+				messageKey = Utility.stringToCharactersArray(
+						messageKeyField.getText());
+			}
+			catch(IllegalArgumentException exception) {
+				JOptionPane.showMessageDialog(parentWindow,
+						"The message key is invalid.");
+				validMessageKey =false;
+			}
+			if(validMessageKey) {
+				if(messageKey.length != 3) {
+					validMessageKey = false;
+				}
+			}
+			
+			//perform the encryption
+			if(validPairings && validStartingPositions && validMessageKey) {
+				enigma.setIndicators(startingPositions);
+				Characters[] messageKeyCiphertext = new Characters[3];
+				
+			}
+		}
+
+	}
 
 	/**
 	 * 
@@ -187,6 +295,7 @@ public class MVP extends JFrame {
 		
 		//Encode Button
 		encodeButton = new JButton("Encode");
+		encodeButton.addActionListener(new Controller(this));
 		tempPanel = new JPanel();
 		tempPanel.add(encodeButton);
 		this.add(tempPanel, BorderLayout.SOUTH);
