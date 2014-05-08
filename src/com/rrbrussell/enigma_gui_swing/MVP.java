@@ -10,8 +10,11 @@ import java.awt.GridBagLayout;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -58,11 +61,15 @@ public class MVP extends JFrame {
 			if(e.getActionCommand().equals("Encode")) {
 				encrypt(e);
 			}
+			if(e.getActionCommand().equals("Decode")) {
+				decrypt(e);
+			}
 
 		}
 		
 		private void encrypt(ActionEvent e) {
 			boolean validPairings = true;
+			boolean noPairings = false;
 			boolean validStartingPositions = true;
 			boolean validMessageKey = true;
 			
@@ -87,12 +94,18 @@ public class MVP extends JFrame {
 			enigma.loadRotors(Reflectors.WideB, rotorTable, ringOffsetTable);
 			
 			//Validate the pairings string
-			if(SteckerBoard.validatePairings(plugBoardField.getText())) {
-				enigma.SetSteckerBoard(plugBoardField.getText());
+			if(plugBoardField.getText().length() == 0) {
+				noPairings = true;
 			} else {
-				JOptionPane.showMessageDialog(parentWindow,
-						"The plugboard settings are not valid");
-				validPairings = false;
+				if(SteckerBoard.validatePairings(plugBoardField.getText())) {
+					enigma.SetSteckerBoard(plugBoardField.getText());
+				} else {
+					if(!noPairings) {
+						JOptionPane.showMessageDialog(parentWindow,
+								"The plugboard settings are not valid");
+						validPairings = false;
+					}
+				}
 			}
 			
 			//Validate the starting positions
@@ -132,9 +145,182 @@ public class MVP extends JFrame {
 			//perform the encryption
 			if(validPairings && validStartingPositions && validMessageKey) {
 				enigma.setIndicators(startingPositions);
-				Characters[] messageKeyCiphertext = new Characters[3];
+				Iterator<Characters> plaintextIterator =
+						Arrays.asList(Utility.stringToCharactersArray(
+								messageKeyField.getText())).iterator();
+				Iterator<Characters> messageKeyCiphertext = 
+						enigma.encipher(plaintextIterator);
 				
+				LinkedList<Characters> tempList = new LinkedList<Characters>();
+				while(messageKeyCiphertext.hasNext()) {
+					tempList.add(messageKeyCiphertext.next());
+				}
+				
+				messageKeyCiphertext = tempList.iterator();
+				
+				messageKeyCiphertext = tempList.iterator();
+				enigma.setIndicators(Utility.stringToCharactersArray(
+						messageKeyField.getText()));
+				
+				plaintextIterator = Arrays.asList(
+						Utility.stringToCharactersArray(
+								prepMessageString())).iterator();
+				Iterator<Characters> ciphertextIterator =
+						enigma.encipher(plaintextIterator);
+				
+				//Format output into 5 character blocks
+				StringBuilder output = new StringBuilder(outputArea.getColumns()
+						* outputArea.getRows());
+				while(messageKeyCiphertext.hasNext()) {
+					output.append(messageKeyCiphertext.next());
+				}
+				output.append(" --- ");
+				int counter = 1;
+				while(ciphertextIterator.hasNext()) {
+					output.append(ciphertextIterator.next());
+					if((counter % 5) == 0) {
+						output.append(" ");
+					}
+					counter++;
+				}
+				
+				outputArea.setText(output.toString());
 			}
+			
+			
+		}
+		
+		private void decrypt(ActionEvent e) {
+			boolean validPairings = true;
+			boolean noPairings = false;
+			boolean validStartingPositions = true;
+			boolean validMessageKey = true;
+			
+			M3Machine enigma = new M3Machine();
+			
+			//construct RotorTable
+			Rotors[] rotorTable = new Rotors[3];
+			Iterator<JComboBox<String>> iterator = rotorChoices.iterator();
+			for(int i = 0; i < rotorTable.length; i++) {
+				rotorTable[i] = Rotors.valueOf((String)
+						iterator.next().getSelectedItem());
+			}
+			
+			//construct ringOffsetTable
+			Characters[] ringOffsetTable = new Characters[3];
+			iterator = rotorOffsets.iterator();
+			for(int i = 0; i < ringOffsetTable.length; i++) {
+				ringOffsetTable[i] = Characters.valueOf((String)
+						iterator.next().getSelectedItem());
+			}
+			
+			enigma.loadRotors(Reflectors.WideB, rotorTable, ringOffsetTable);
+			
+			//Validate the pairings string
+			if(plugBoardField.getText().length() == 0) {
+				noPairings = true;
+			} else {
+				if(SteckerBoard.validatePairings(plugBoardField.getText())) {
+					enigma.SetSteckerBoard(plugBoardField.getText());
+				} else {
+					if(!noPairings) {
+						JOptionPane.showMessageDialog(parentWindow,
+								"The plugboard settings are not valid");
+						validPairings = false;
+					}
+				}
+			}
+			
+			//Validate the starting positions
+			Characters[] startingPositions = null;
+			try {
+				startingPositions = Utility.stringToCharactersArray(
+						startPositionField.getText());
+			}
+			catch(IllegalArgumentException exception) {
+				JOptionPane.showMessageDialog(parentWindow,
+						"The starting positions are wrong.");
+				validStartingPositions =false;
+			}
+			if(validStartingPositions) {
+				if(startingPositions.length != 3) {
+					validStartingPositions = false;
+				}
+			}
+			
+			//Validate message key
+			Characters[] messageKey = null;
+			try {
+				messageKey = Utility.stringToCharactersArray(
+						messageKeyField.getText());
+			}
+			catch(IllegalArgumentException exception) {
+				JOptionPane.showMessageDialog(parentWindow,
+						"The message key is invalid.");
+				validMessageKey =false;
+			}
+			if(validMessageKey) {
+				if(messageKey.length != 3) {
+					validMessageKey = false;
+				}
+			}
+			
+			//perform the decryption
+			if(validPairings && validStartingPositions && validMessageKey) {
+				enigma.setIndicators(startingPositions);
+				Iterator<Characters> plaintextIterator =
+						Arrays.asList(Utility.stringToCharactersArray(
+								messageKeyField.getText())).iterator();
+				Iterator<Characters> messageKeyCiphertext = 
+						enigma.encipher(plaintextIterator);
+				
+				LinkedList<Characters> tempList = new LinkedList<Characters>();
+				while(messageKeyCiphertext.hasNext()) {
+					tempList.add(messageKeyCiphertext.next());
+				}
+				
+				messageKeyCiphertext = tempList.iterator();
+				//Reset indicators
+				Characters[] tempArray = new Characters[tempList.size()];
+				for(int i = 0; i < tempArray.length; i++) {
+					tempArray[i] = messageKeyCiphertext.next();
+				}
+				messageKeyCiphertext = tempList.iterator();
+				enigma.setIndicators(tempArray);
+				
+				plaintextIterator = Arrays.asList(
+						Utility.stringToCharactersArray(
+								prepMessageString())).iterator();
+				Iterator<Characters> ciphertextIterator =
+						enigma.encipher(plaintextIterator);
+				
+				//Format output into 5 character blocks
+				StringBuilder output = new StringBuilder(outputArea.getColumns()
+						* outputArea.getRows());
+				int counter = 1;
+				while(ciphertextIterator.hasNext()) {
+					output.append(ciphertextIterator.next());
+					if((counter % 5) == 0) {
+						output.append(" ");
+					}
+					counter++;
+				}
+				
+				outputArea.setText(output.toString());
+			}
+			
+			
+		}
+		
+		private String prepMessageString() {
+			StringBuilder processedString = new StringBuilder(
+					messageArea.getText().length());
+			Matcher match = Pattern.compile("\\p{Upper}").matcher(
+					messageArea.getText().toUpperCase());
+			while(match.find()) {
+				processedString.append(match.group());
+			}
+			return processedString.toString();
 		}
 
 	}
@@ -152,6 +338,8 @@ public class MVP extends JFrame {
 	private JTextArea messageArea;
 	private JTextArea outputArea;
 	private JButton encodeButton;
+	private JButton decodeButton;
+	private Controller controller;
 
 	/**
 	 * @param title
@@ -284,6 +472,7 @@ public class MVP extends JFrame {
 				TitledBorder.LEFT, TitledBorder.DEFAULT_POSITION);
 		tempPanel.setBorder(tempTitledBorder);
 		outputArea = new JTextArea(4, 60);
+		outputArea.setEditable(false);
 		tempPanel.add(outputArea);
 		constraints.gridy = 5;
 		constraints.gridheight = 2;
@@ -295,9 +484,16 @@ public class MVP extends JFrame {
 		
 		//Encode Button
 		encodeButton = new JButton("Encode");
-		encodeButton.addActionListener(new Controller(this));
+		controller = new Controller(this);
+		encodeButton.addActionListener(controller);
 		tempPanel = new JPanel();
 		tempPanel.add(encodeButton);
+		
+		//Decode Button
+		decodeButton = new JButton("Decode");
+		decodeButton.addActionListener(controller);
+		tempPanel.add(decodeButton);
+		
 		this.add(tempPanel, BorderLayout.SOUTH);
 	}
 
