@@ -4,22 +4,20 @@
 package com.rrbrussell.enigma_gui_swing.M3;
 
 import java.util.Map;
-import java.util.Vector;
 
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
+ * Non working code for that is dependent on a future update to the enigma
+ * demonstration library
+ * 
  * @author Robert R. Russell
- *
+ * @author robert@rrbrussell.com
  */
 public class RotorOperationalPanel extends JPanel {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 8785939323851012591L;
 	
 	private Map<String, JLabel> rotorLabels;

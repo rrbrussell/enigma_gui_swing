@@ -33,12 +33,16 @@ import com.rrbrussell.enigma_demonstration.Reflector.Reflectors;
 import com.rrbrussell.enigma_demonstration.Rotor.Rotors;
 
 /**
+ * @since v0.1
+ * 
  * @author Robert R. Russell
- *
+ * @author robert@rrbrussell.com
  */
 public class MVP extends JFrame {
 
 	/**
+	 * @since v0.1
+	 * 
 	 * @author Robert R. Russell
 	 * @author robert@rrbussell.com
 	 */
@@ -53,8 +57,8 @@ public class MVP extends JFrame {
 			parentWindow = parent;
 		}
 
-		/* (non-Javadoc)
-		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+		/** 
+		 * @link{java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)}
 		 */
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -67,6 +71,14 @@ public class MVP extends JFrame {
 
 		}
 		
+		/**
+		 * TODO in need of a code refactor to reduce common code with
+		 * decrypt(ActionEvent e).
+		 * 
+		 * @since v0.1
+		 * 
+		 * @param e
+		 */
 		private void encrypt(ActionEvent e) {
 			boolean validPairings = true;
 			boolean noPairings = false;
@@ -190,6 +202,14 @@ public class MVP extends JFrame {
 			
 		}
 		
+		/**
+		 * TODO In need of a code refactor to reduce common code with
+		 * encrypt(ActionEvent e).
+		 * 
+		 * @since v0.1
+		 * 
+		 * @param e
+		 */
 		private void decrypt(ActionEvent e) {
 			boolean validPairings = true;
 			boolean noPairings = false;
@@ -325,9 +345,6 @@ public class MVP extends JFrame {
 
 	}
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -1451212147181279526L;
 	
 	private LinkedList<JComboBox<String>> rotorChoices;
@@ -342,7 +359,13 @@ public class MVP extends JFrame {
 	private Controller controller;
 
 	/**
+	 * TODO Probably needs a major code review to see if any commonalities can
+	 * be eliminated, but it does work.
+	 * 
+	 * @since v0.1
+	 * 
 	 * @param title
+	 * 
 	 * @throws HeadlessException
 	 */
 	public MVP(String title) throws HeadlessException {
@@ -505,7 +528,6 @@ public class MVP extends JFrame {
 		window.pack();
 		window.setSize(window.getPreferredSize());
 		window.setVisible(true);
-
 	}
 
 }

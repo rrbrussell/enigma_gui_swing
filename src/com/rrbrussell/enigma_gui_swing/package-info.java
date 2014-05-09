@@ -1,7 +1,6 @@
 /**
  * Copyright (c) 2014 Robert R. Russell
- */
-/**
+ *
  * @author Robert R. Russell
  * @author robert@rrbrussell.com
  *

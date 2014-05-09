@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014 Robert R. Russell
+ * Main.java Copyright (c) 2014 Robert R. Russell
  */
 package com.rrbrussell.enigma_gui_swing;
 
@@ -10,19 +10,16 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Properties;
 
-
-
-
-
-//import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 /**
+ * The launcher for Swinging Enigma.
+ * 
+ * This code is for possible update code to handle both the M3 and M4 Enigma
+ * Machines.
+ * 
  * @author Robert R. Russell
  * @author robert@rrbrussell.com
- * 
- * The launcher for Swinging Enigma.
- *
  */
 public class Main extends javax.swing.JFrame {
 
